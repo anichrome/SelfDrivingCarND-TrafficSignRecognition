@@ -18,7 +18,7 @@ In this work, I have used the approaches written by Pierre Sermanet and Yann LeC
 [//]: # (Image References)
 
 [image1]: ./images_for_report/input_dataset.png "Traning data"
-[image2]: ./images_for_report/input_dat_histogram.png "Histogram of traning data"
+[image2]: ./images_for_report/input_data_histogram.png "Histogram of traning data"
 [image3]: ./images_for_report/preprocessed_data.png "Training data after preprocessing"
 [image4]: ./images_for_report/validation_accuracy.png "Validation Accuracy"
 [image5]: ./images_for_report/german_traffic_signs.png "Test Images from German Traffic Signs"
