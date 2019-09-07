@@ -1,30 +1,9 @@
-## Project: Build a Traffic Sign Recognition Program
+# Project: Traffic Sign Recognition
 [![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 
-Overview
----
-In this project, you will use what you've learned about deep neural networks and convolutional neural networks to classify traffic signs. You will train and validate a model so it can classify traffic sign images using the [German Traffic Sign Dataset](http://benchmark.ini.rub.de/?section=gtsrb&subsection=dataset). After the model is trained, you will then try out your model on images of German traffic signs that you find on the web.
 
-We have included an Ipython notebook that contains further instructions 
-and starter code. Be sure to download the [Ipython notebook](https://github.com/udacity/CarND-Traffic-Sign-Classifier-Project/blob/master/Traffic_Sign_Classifier.ipynb). 
+# Goals of the project
 
-We also want you to create a detailed writeup of the project. Check out the [writeup template](https://github.com/udacity/CarND-Traffic-Sign-Classifier-Project/blob/master/writeup_template.md) for this project and use it as a starting point for creating your own writeup. The writeup can be either a markdown file or a pdf document.
-
-To meet specifications, the project will require submitting three files: 
-* the Ipython notebook with the code
-* the code exported as an html file
-* a writeup report either as a markdown or pdf file 
-
-Creating a Great Writeup
----
-A great writeup should include the [rubric points](https://review.udacity.com/#!/rubrics/481/view) as well as your description of how you addressed each point.  You should include a detailed description of the code used in each step (with line-number references and code snippets where necessary), and links to other supporting documents or external references.  You should include images in your writeup to demonstrate how your code works with examples.  
-
-All that said, please be concise!  We're not looking for you to write a book here, just a brief description of how you passed each rubric point, and references to the relevant code :). 
-
-You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup.
-
-The Project
----
 The goals / steps of this project are the following:
 * Load the data set
 * Explore, summarize and visualize the data set
@@ -33,26 +12,132 @@ The goals / steps of this project are the following:
 * Analyze the softmax probabilities of the new images
 * Summarize the results with a written report
 
-### Dependencies
-This lab requires:
 
-* [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit)
+In this work, I have used the approaches written by Pierre Sermanet and Yann LeCun in their paper "Traffic Sign Recognition with Multi-Scale Convolutional Networks". 
 
-The lab environment can be created with CarND Term1 Starter Kit. Click [here](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) for the details.
+[//]: # (Image References)
 
-### Dataset and Repository
+[image1]: ./images_for_report/input_dataset.png "Traning data"
+[image2]: ./images_for_report/input_dat_histogram.png "Histogram of traning data"
+[image3]: ./images_for_report/preprocessed_data.png "Training data after preprocessing"
+[image4]: ./images_for_report/validation_accuracy.png "Validation Accuracy"
+[image5]: ./images_for_report/german_traffic_signs.png "Test Images from German Traffic Signs"
+[image6]: ./images_for_report/softmax_1.png "Softmax probabilities"
+[image7]: ./images_for_report/softmax_2.png "Softmax Probabilities"
 
-1. Download the data set. The classroom has a link to the data set in the "Project Instructions" content. This is a pickled dataset in which we've already resized the images to 32x32. It contains a training, validation and test set.
-2. Clone the project, which contains the Ipython notebook and the writeup template.
-```sh
-git clone https://github.com/udacity/CarND-Traffic-Sign-Classifier-Project
-cd CarND-Traffic-Sign-Classifier-Project
-jupyter notebook Traffic_Sign_Classifier.ipynb
-```
 
-### Requirements for Submission
-Follow the instructions in the `Traffic_Sign_Classifier.ipynb` notebook and write the project report using the writeup template as a guide, `writeup_template.md`. Submit the project code and writeup document.
 
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
+## Rubric Points
+Here I will consider the [rubric points](https://review.udacity.com/#!/rubrics/481/view) individually and describe how I addressed each point in my implementation.
 
+
+### Summary of the dataset used
+
+The summary is calculated using python with the help of numpy.
+
+* The size of training set is 34799
+* The size of the validation set is 4410
+* The size of test set is 12630
+* The shape of a traffic sign image is 32 x 32 x 3
+* The number of unique classes/labels in the data set is 43
+
+The figure below shows a small subset of the input dataset.
+
+![alt text][image1]
+
+The graph shows the distribution of traffic sign in the training set.
+
+![alt text][image2]
+
+### Design, train and test a model architecture
+
+Before a model could be designed and the data be trained, I pre-processed the available data using techiniques mentioned in the paper "Traffic Sign Recognition with Multi-Scale Convolutional Networks" by Pierre Sermanet and Yann LeCun. 
+
+In the first step, I converted the RGB image to Grayscale as the color does not contribute to learning of traffic signs as mentioned in  the paper. I used luma channel from YUV color space for this.
+
+This channel is then processed first by local normalization and then by global normalization. Local normalization increases the contrast within the image, whereas global normalization centers all images around its mean.
+
+To increase the variance of the dataset I added four additional images for each training image. The processing pipeline is like this:
+
+* translate randomly by [-2, 2] pixel in any direction
+* rotate by random degree [-15, 15] 
+* scale in any direction by pixels in range [-2, 2]
+
+The figure below shows a subset of the training data after preprocessing steps.
+
+![alt text][image3]
+
+#### Model Architecture
+
+The model I used consisted of the following layers. I adapted the LeNet model with the recommendations from Pierre Sermanet and Yann LeCun :
+
+| Layer         		|     Description	        					| 
+|:--------------------:|:---------------------------------------------:| 
+| Input         		| 32x32x1 Grayscale image   							| 
+| Layer 1: Convolution 3x3     	| 1x1 stride, valid padding, outputs 28x28x108 	|
+| Layer 1: RELU					|												|
+| Layer 1: Max pooling	      	| 2x2 stride,  outputs 14x14x108 				|
+| Layer 2: Convolution 3x3     	| 1x1 stride, valid padding, outputs 10x10x108 	|
+| Layer 2: RELU					|												|
+| Layer 2: Max pooling	      	| 2x2 stride,  outputs 5x5x108 				|
+| Dropout Layer 1	      	| Keep Propability: 0.5 				|
+| Dropout Layer 2	      	| Keep Propability: 0.5 				|
+| Flatten and Combine	      	| outputs 57153600 x 1 				|
+| Fully connected| | 
+| Classifier Layer 1: Network	    | 57 Hidden Units       									|
+| Classifier Layer 1: RELU		| 												|
+| Classifier Layer 1: Dropout	      	| Keep Propability: 0.5 				|
+| Classifier Layer 2: Network	    | 43 Hidden Units       									|									|
+| Softmax cross entropy with logits				|         									|
+| Loss operation						| reduce mean												|
+| Optimizer						| AdamOptimizer learning rate 0.0002												|
+
+
+#### Model Training
+
+As a first step, I trained the preprocessed dataset with leNet architecture as mentioned in the excercises. It showed good results in the beginning, but I could quickly notice that it overfitted the data. Especially while testing on new images, it showed bias towards a particular image. 
+
+I then folowed the approach mentioned by Pierre Sermanet and Yann LeCun in their paper to change the model architecture. This improved the performance of the network a lot. The details of my training is discussed in the table below.
+
+| Epoch | Batch Size | Learn Rate |
+|:--:|:--:|:--:|
+|30|32|0,0002|
+
+#### Model modifications
+
+To achieve the required validation accuracy, I had to make several changes to the LeNet architecture. They are discussed below.
+
+##### Local Normalization
+
+In addition to the global normalization of training images, I introduced a local normalization which contributed to the performance of my network. The local normalization impoved the contrast of edges a lot, even if pictures histogram looked already widespread. This does not only help the human eye to recognize a picture but is also beneficial for the network as features are exposed.
+
+##### Dropout
+
+In my first approach with the LeNet model, I did not use the drouputs and I believe this was a major factor for overfitting of data. Due to this reason, I included two drop out layers after the convolutional layers and as it can be seen from the results, the data was not overfit anymore and the performance improved drastically as compared to the first approach.
+
+#### Final Results
+With the discussed parameters and the model, I could achieve the following results:
+
+* validation set accuracy of 0.9927437641723356
+* test set accuracy of 0.9736342042944116
+
+The figure below shows the validation accuracy while training.
+
+![alt text][image4]
+
+### Test the Model on New Images
+
+I downloaded the following 6 images from the internet to test the model I trained. The images I used can be seen here:
+
+I chose the images which were relatively of lower resolution, having rotation and hard to identify on purpose. But, the model could identify them with a 100% accuracy on all of the images.
+
+![alt text][image5]
+
+### Softmax probabilities
+
+The softmax probabilities of each image is as shown below.
+
+![alt text][image6]
+![alt text][image7]
+
+As it can be seen, the model predicts the correct traffic sign with a higher softmax probability on all occasions.
